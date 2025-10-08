@@ -2,7 +2,7 @@
 
 ## Links
 - **GitHub Page URL:** https://ttristanny.github.io/qtm350-assign05/
-- **HTML Report:** ttps://ttristanny.github.io/qtm350-assign05/report.html
+- **HTML Report:** https://ttristanny.github.io/qtm350-assign05/report.html
 - **Slides:** https://ttristanny.github.io/qtm350-assign05/slides.html
 
 
