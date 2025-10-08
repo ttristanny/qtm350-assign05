@@ -1,0 +1,91 @@
+---
+title: "WDI 2022 — Key Findings"
+author: "Tristan Yang"
+date: "8 October 2025"
+format:
+  revealjs:
+    theme: simple
+    transition: fade
+    slide-number: true
+    toc: true
+execute:
+  echo: false
+bibliography: references.bib
+---
+
+## Title
+
+**World Development Indicators (2022)**  
+A concise walk‑through of results from the report.
+
+---
+
+## Data & Setup
+
+- Source: World Bank WDI [@worldbank_wdi]
+- Unit of analysis: Countries, year 2022
+- Indicators used: GDP per capita, life expectancy, inflation, unemployment, exports share, primary school enrolment
+
+```{python}
+import pandas as pd
+df = pd.read_csv("wdi.csv")
+df.columns = [c.strip().lower().replace(" ", "_") for c in df.columns]
+```
+
+---
+
+## Summary snapshot
+
+```{python}
+summary = df[["gdp_per_capita","life_expectancy","inflation_rate","unemployment_rate"]].describe().T
+summary
+```
+
+---
+
+## Income & Health
+
+```{python}
+import matplotlib.pyplot as plt
+fig, ax = plt.subplots(figsize=(7,5))
+ax.scatter(df["gdp_per_capita"], df["life_expectancy"], alpha=0.7)
+ax.set_xlabel("GDP per capita (US$)")
+ax.set_ylabel("Life expectancy (years)")
+ax.set_title("Income vs. Health (2022)")
+plt.tight_layout()
+```
+
+**Reading:** Positive association; outliers exist.
+
+---
+
+## Top 10 GDP per capita
+
+```{python}
+top = df.dropna(subset=["gdp_per_capita"]).nlargest(10, "gdp_per_capita")
+top[["country","gdp_per_capita"]]
+```
+
+```{python}
+import matplotlib.pyplot as plt
+fig, ax = plt.subplots(figsize=(8,5))
+ax.barh(top["country"], top["gdp_per_capita"])
+ax.invert_yaxis()
+ax.set_xlabel("GDP per capita (US$)")
+ax.set_title("Top 10 countries, 2022")
+plt.tight_layout()
+```
+
+---
+
+## Takeaways
+
+- Higher income aligns with longer life expectancy.  
+- Macro conditions vary widely across countries.  
+- Results are reproducible with Quarto [@quarto_doc].
+
+---
+
+## Thanks
+
+Links in the README include GitHub Pages / GitHack URLs to HTML report and slides, and the repository itself.

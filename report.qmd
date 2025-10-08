@@ -1,0 +1,143 @@
+---
+title: "World Development Indicators — 2022 Snapshot"
+author: "Tristan Yang"
+date: "8 October 2025"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    number-sections: true
+  pdf:
+    toc: true
+    number-sections: true
+execute:
+  echo: false   # hide code in final document (per assignment step 4)
+bibliography: references.bib
+lang: en
+---
+
+# Introduction
+
+This report analyzes a 2022 snapshot from the World Development Indicators (WDI) dataset [@worldbank_wdi].
+We focus on a subset of indicators (GDP per capita, life expectancy, inflation, unemployment, exports share, and primary school enrolment) across countries.
+All code is executed within Quarto and hidden in the final rendering. See the accompanying Reveal.js slides for a condensed presentation.
+
+
+# Data loading {#sec-data}
+
+::: {.callout-note}
+**Source.** The data come from the World Bank WDI API, saved locally as `wdi.csv` (217 rows × 14 columns in the provided sample).
+:::
+
+```{python}
+import pandas as pd
+
+# Read data (expects wdi.csv in working directory)
+df = pd.read_csv("wdi.csv")
+
+# Standardize column names just in case
+df.columns = [c.strip().lower().replace(" ", "_") for c in df.columns]
+
+# Keep a small working subset of indicators (feel free to expand)
+keep = [
+    "country",
+    "gdp_per_capita",
+    "life_expectancy",
+    "inflation_rate",
+    "unemployment_rate",
+    "exports_gdp_share",
+    "primary_school_enrolment_rate",
+    "total_population"
+]
+available = [c for c in keep if c in df.columns]
+df = df[available].copy()
+
+# Basic cleaning: drop rows missing both GDP per capita and life expectancy
+df = df.dropna(subset=[c for c in ["gdp_per_capita", "life_expectancy"] if c in df.columns])
+df.head()
+```
+
+The table describes the retained variables, and the figure previews a key relationship we analyze below.
+
+# Exploratory data analysis
+
+## Summary statistics {#sec-summary}
+
+```{python}
+import numpy as np
+#| label: tbl-summary
+#| tbl-cap: "Summary statistics for selected indicators."
+
+
+summary = df.describe(include="all").T
+summary = summary[["count","mean","std","min","25%","50%","75%","max"]]
+summary
+```
+
+
+Key takeaways:
+- Wide dispersion in **GDP per capita** and **life expectancy** indicates heterogeneity across income levels.
+- **Inflation** and **unemployment** vary considerably; distributions are right‑skewed in many cases.
+- Countries with higher **exports share** often (not always) have higher income.
+
+## Relationships between indicators
+
+We examine three relationships:
+1. Income and health: GDP per capita vs. life expectancy.
+2. Macroeconomic environment: Inflation vs. unemployment.
+3. Human capital and income: Primary school enrolment vs. GDP per capita.
+
+```{python}
+corrs = {}
+for pair in [
+    ("gdp_per_capita", "life_expectancy"),
+    ("inflation_rate", "unemployment_rate"),
+    ("primary_school_enrolment_rate", "gdp_per_capita")
+]:
+    x, y = pair
+    if x in df.columns and y in df.columns:
+        corrs[f"{x} ~ {y}"] = float(df[[x, y]].dropna().corr().iloc[0,1])
+corrs
+```
+
+# Visualizations
+
+## GDP per capita vs. life expectancy
+
+```{python}
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots(figsize=(7,5))
+x = df["gdp_per_capita"]
+y = df["life_expectancy"]
+ax.scatter(x, y, alpha=0.7)
+ax.set_xlabel("GDP per capita (current US$)")
+ax.set_ylabel("Life expectancy at birth (years)")
+ax.set_title("Income and health: GDP per capita vs Life expectancy")
+plt.tight_layout()
+```
+
+
+## Top 10 countries by GDP per capita (bar chart)
+
+```{python}
+top = df.dropna(subset=["gdp_per_capita"]).nlargest(10, "gdp_per_capita")
+fig, ax = plt.subplots(figsize=(8,5))
+ax.barh(top["country"], top["gdp_per_capita"])
+ax.invert_yaxis()
+ax.set_xlabel("GDP per capita (current US$)")
+ax.set_title("Top 10 countries by GDP per capita, 2022")
+plt.tight_layout()
+```
+
+# Cross‑references in context
+
+As shown in Figure, income is positively associated with health outcomes.
+The distributional context from Table provides useful bounds for interpreting typical versus extreme values.
+
+# Conclusion
+
+We presented a short 2022 profile using WDI. The analysis suggests strong links between income and health, and heterogeneous macro conditions.
+All materials are reproducible in Quarto. See @quarto_doc for authoring and cross‑referencing conventions.
+
+# References
