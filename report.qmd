@@ -6,8 +6,7 @@ format:
   html:
     toc: true
     toc-depth: 2
-    number-sections: true
-    output-file: index.html
+    number-sections: trues
   pdf:
     toc: true
     number-sections: true
